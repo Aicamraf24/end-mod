@@ -24,13 +24,22 @@ jobs:
         with:
           gradle-version: current
 
+      - name: Descomprimir el proyecto
+        run: |
+          if [ -f endrealms.zip ]; then
+            unzip -q -o endrealms.zip -d proyecto
+          else
+            mkdir proyecto
+            cp -r . proyecto/ 2>/dev/null || true
+          fi
+
       - name: Buscar el proyecto
         id: proyecto
         run: |
-          f=$(find . -name settings.gradle -not -path './.git/*' | head -n 1)
+          f=$(find proyecto -name settings.gradle | head -n 1)
           if [ -z "$f" ]; then
-            echo "No se encontró settings.gradle en el repositorio. Archivos presentes:"
-            find . -not -path './.git/*' -type f | head -n 50
+            echo "No se encontró settings.gradle. Archivos presentes:"
+            find proyecto -type f | head -n 50
             exit 1
           fi
           echo "dir=$(dirname "$f")" >> "$GITHUB_OUTPUT"

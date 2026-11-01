@@ -24,11 +24,23 @@ jobs:
         with:
           gradle-version: current
 
+      - name: Buscar el proyecto
+        id: proyecto
+        run: |
+          f=$(find . -name settings.gradle -not -path './.git/*' | head -n 1)
+          if [ -z "$f" ]; then
+            echo "No se encontró settings.gradle en el repositorio. Archivos presentes:"
+            find . -not -path './.git/*' -type f | head -n 50
+            exit 1
+          fi
+          echo "dir=$(dirname "$f")" >> "$GITHUB_OUTPUT"
+
       - name: Compilar
+        working-directory: ${{ steps.proyecto.outputs.dir }}
         run: gradle build
 
       - name: Subir el jar
         uses: actions/upload-artifact@v4
         with:
           name: endrealms
-          path: build/libs/
+          path: ${{ steps.proyecto.outputs.dir }}/build/libs/

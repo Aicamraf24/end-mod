@@ -48,7 +48,7 @@ jobs:
         working-directory: ${{ steps.proyecto.outputs.dir }}
         run: gradle build
 
-      - name: Probar servidor (muestra el error real)
+      - name: Probar servidor y mostrar el error real
         continue-on-error: true
         working-directory: ${{ steps.proyecto.outputs.dir }}
         run: |
@@ -61,12 +61,9 @@ jobs:
           echo "===== FINAL DEL LOG ====="
           tail -80 server.log
 
-      - name: Subir jar y logs
+      - name: Subir el jar
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: endrealms
-          path: |
-            ${{ steps.proyecto.outputs.dir }}/build/libs/
-            ${{ steps.proyecto.outputs.dir }}/server.log
-            ${{ steps.proyecto.outputs.dir }}/run/logs/
+          path: ${{ steps.proyecto.outputs.dir }}/build/libs/

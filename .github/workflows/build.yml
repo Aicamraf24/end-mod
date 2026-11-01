@@ -48,8 +48,25 @@ jobs:
         working-directory: ${{ steps.proyecto.outputs.dir }}
         run: gradle build
 
-      - name: Subir el jar
+      - name: Probar servidor (muestra el error real)
+        continue-on-error: true
+        working-directory: ${{ steps.proyecto.outputs.dir }}
+        run: |
+          mkdir -p run
+          echo "eula=true" > run/eula.txt
+          printf "online-mode=false\n" > run/server.properties
+          (sleep 200; echo stop) | timeout 420 gradle runServer > server.log 2>&1 || true
+          echo "===== ERRORES ====="
+          grep -n -i -E "ERROR|Exception|Caused by|Failed|Unknown|Couldn't" server.log | head -100 || true
+          echo "===== FINAL DEL LOG ====="
+          tail -80 server.log
+
+      - name: Subir jar y logs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: endrealms
-          path: ${{ steps.proyecto.outputs.dir }}/build/libs/
+          path: |
+            ${{ steps.proyecto.outputs.dir }}/build/libs/
+            ${{ steps.proyecto.outputs.dir }}/server.log
+            ${{ steps.proyecto.outputs.dir }}/run/logs/

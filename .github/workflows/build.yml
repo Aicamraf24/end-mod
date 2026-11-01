@@ -39,7 +39,7 @@ jobs:
           f=$(find proyecto -name settings.gradle | head -n 1)
           if [ -z "$f" ]; then
             echo "No se encontró settings.gradle. Archivos presentes:"
-            find proyecto -type f | head -n 50
+            find proyecto -type f -not -path 'proyecto/.git/*' | head -n 50
             exit 1
           fi
           echo "dir=$(dirname "$f")" >> "$GITHUB_OUTPUT"

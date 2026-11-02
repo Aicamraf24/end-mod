@@ -26,20 +26,27 @@ jobs:
 
       - name: Descomprimir el proyecto
         run: |
-          if [ -f endrealms.zip ]; then
-            unzip -q -o endrealms.zip -d proyecto
-          else
-            mkdir proyecto
-            cp -r . proyecto/ 2>/dev/null || true
+          mkdir -p proyecto
+          zips=$(find . -maxdepth 2 -name '*.zip' -not -path './.git/*')
+          if [ -z "$zips" ]; then
+            echo "ERROR: no hay ningún .zip en el repositorio."
+            echo "Sube endrealms.zip a la raíz de la rama que se compila y vuelve a ejecutar."
+            echo "Archivos presentes:"
+            find . -type f -not -path './.git/*' | head -n 30
+            exit 1
           fi
+          echo "$zips" | while read -r z; do
+            echo "Descomprimiendo: $z"
+            unzip -q -o "$z" -d proyecto
+          done
 
       - name: Buscar el proyecto
         id: proyecto
         run: |
           f=$(find proyecto -name settings.gradle | head -n 1)
           if [ -z "$f" ]; then
-            echo "No se encontró settings.gradle. Archivos presentes:"
-            find proyecto -type f -not -path 'proyecto/.git/*' | head -n 50
+            echo "No se encontró settings.gradle dentro del zip."
+            find proyecto -type f | head -n 50
             exit 1
           fi
           echo "dir=$(dirname "$f")" >> "$GITHUB_OUTPUT"
